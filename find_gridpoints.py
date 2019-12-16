@@ -1,23 +1,15 @@
 import click
 import geopandas as gpd
+import pandas as pd
 import requests
 from shapely.geometry import LineString
 
 
 @click.command()
 @click.option(
-    '--file',
-    required=False,
-    type=click.Path(
-        exists=True, file_okay=True, dir_okay=False, resolve_path=True),
-    default=None,
-    help=
-    'Geospatial file with geometry to download data for. Will download all image tiles that intersect this geometry. Must be a file format that GeoPandas can read.'
-)
-@click.option(
     '-d',
     '--dist',
-    required=False,
+    required=True,
     type=float,
     default=None,
     show_default=True,
@@ -31,11 +23,22 @@ from shapely.geometry import LineString
     help=
     'EPSG code for projection used when creating buffer. Coordinates must be in meters.'
 )
-def main(file, dist, projection):
+@click.argument(
+    'files',
+    required=True,
+    type=click.Path(
+        exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+    nargs=-1)
+def main(files, dist, projection):
     """Find NOAA NDFD gridpoints along LineString
     """
     # Load file
-    gdf = gpd.read_file(file)
+    gdfs = []
+    for file in files:
+        gdf = gpd.read_file(file)
+        gdfs.append(gdf)
+
+    gdfs = gpd.GeoDataFrame(pd.concat(gdfs, sort=False))
 
     # Reproject:
     gdf = gdf.to_crs(epsg=projection)
@@ -85,3 +88,7 @@ def redistribute_vertices(geom, distance):
         return type(geom)([p for p in parts if not p.is_empty])
     else:
         raise ValueError('unhandled geometry %s', (geom.geom_type, ))
+
+
+if __name__ == '__main__':
+    main()
