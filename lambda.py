@@ -17,6 +17,7 @@ def lambda_handler(event, context):
     sections = ['ca_south', 'ca_central', 'ca_north', 'or', 'wa']
 
     for section in sections:
+        print(f'Updating section: {section}')
         update_forecasts(section)
 
 
@@ -32,6 +33,8 @@ def update_forecasts(section):
     buffer = BytesIO()
     with ZipFile(buffer, 'w') as zf:
         for url in lines:
+            print(f'Downloading url: {url}')
+
             # Get forecast and store as minified JSON string
             r = requests.get(url)
             json_string = json.dumps(r.json(), separators=(',', ':'))
