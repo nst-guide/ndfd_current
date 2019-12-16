@@ -60,8 +60,6 @@ def main(files, dist, projection):
     for row in interpolated_gdf.itertuples():
         all_urls.update(find_gridpoints(row.geometry.coords))
 
-        len(all_urls)
-
     print('\n'.join(all_urls))
 
 
@@ -72,7 +70,9 @@ def find_gridpoints(points):
     for point in points:
         request_url = baseurl + f'{point[1]},{point[0]}'
         r = requests.get(request_url, headers=headers)
-        forecast_urls.add(r.json()['properties']['forecast'])
+        res = r.json()
+        if res.get('properties') and res['properties'].get('forecast'):
+            forecast_urls.add(res['properties']['forecast'])
 
     return forecast_urls
 
