@@ -1,5 +1,38 @@
-# Current NDFD forecasts
+# Current NOAA NDFD forecasts
 
+The National Weather Service creates forecasts for a grid of cells 2.5km on each
+side that span the entire United States. That means that if you select any point
+in the continental United States, it'll be a part of one of these grid cells.
+You can see it on the web using their [web
+portal](https://forecast.weather.gov/MapClick.php?lon=-119.31320821939654&lat=37.881631297141496).
+
+All the data on that web portal is also exposed through their APIs. I use those
+APIs to serve regularly-updated weather forecasts through the website and mobile
+app.
+
+The URLs to query these _gridpoints_, the centroids of each of these cells, have
+the local station identifier as well, i.e.:
+```
+https://api.weather.gov/gridpoints/PQR/138,104/forecast
+```
+Because of this, I first need to query the `points/` API endpoint with a series
+of lat/lon coordinates to find the URLs to later ping for the actual forecasts.
+
+`find_gridpoints.py` takes a LineString geometry and a distance and retrieves
+the URLs for the grid cells corresponding to a point along that LineString every
+`dist` meters.
+
+`lambda.py` is a small function that is run on AWS lambda to very cheaply update
+my S3 bucket with the latest version of the forecasts. Even without the Lambda
+free tier, the code takes about 4 minutes to run, and if I ran it every 4 hours,
+it would cost 15 cents per month.
+
+`lambda.py` uploads both individual GeoJSON files and zipped archives of
+GeoJSONs per trail section. Individual GeoJSON files would be easiest to
+transmit via the web API, and the zipped files would allow for bulk downloads
+for offline use in the mobile app.
+
+## Usage
 
 ```
 > python find_gridpoints.py --help
