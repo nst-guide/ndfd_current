@@ -32,13 +32,15 @@ from shapely.geometry import LineString
 def main(files, dist, projection):
     """Find NOAA NDFD gridpoints along LineString
     """
-    # Load file
+    # Load files
     gdfs = []
     for file in files:
         gdf = gpd.read_file(file)
         gdfs.append(gdf)
 
-    gdfs = gpd.GeoDataFrame(pd.concat(gdfs, sort=False))
+    # Append into one
+    gdf = gpd.GeoDataFrame(
+        pd.concat(gdfs, sort=False), crs={'init': 'epsg:4326'})
 
     # Reproject:
     gdf = gdf.to_crs(epsg=projection)
