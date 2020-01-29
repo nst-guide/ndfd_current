@@ -29,6 +29,11 @@ def main(files):
     features = []
     for url in lines:
         r = requests.get(url)
+
+        # Somewhat often the NWS returns 404
+        if r.status_code == 404:
+            continue
+
         d = r.json()
         geometry = d['geometry']
         if geometry['type'] != 'GeometryCollection':

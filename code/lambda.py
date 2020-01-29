@@ -38,6 +38,9 @@ def update_forecasts(section):
 
             # Get forecast and store as minified JSON string
             r = requests.get(url)
+            # Somewhat often the NWS returns 404
+            if r.status_code == 404:
+                continue
             json_string = json.dumps(r.json(), separators=(',', ':'))
 
             # Get the path after the weather.gov url, i.e.:
