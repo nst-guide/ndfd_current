@@ -1,0 +1,9 @@
+name: ndfd_current
+channels:
+  - conda-forge
+dependencies:
+  - click
+  - geopandas
+  - pandas
+  - requests
+  - shapely
