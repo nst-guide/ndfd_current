@@ -32,6 +32,9 @@ GeoJSONs per trail section. Individual GeoJSON files would be easiest to
 transmit via the web API, and the zipped files would allow for bulk downloads
 for offline use in the mobile app.
 
+`get_grid_geojson.py` takes the grid cells found in `find_gridpoints.py` and
+computes a single GeoJSON with all given cells in a single FeatureCollection.
+
 ## Usage
 
 ```
@@ -49,7 +52,7 @@ Options:
 ```
 
 So to get the gridpoints for 10km intervals of the five sections of the PCT:
-```
+```bash
 export DATA_DIR=...
 python code/find_gridpoints.py \
     --dist 10000 \
@@ -95,4 +98,23 @@ python code/find_gridpoints.py \
     $DATA_DIR/WA_Sec_K_tracks.geojson \
     $DATA_DIR/WA_Sec_L_tracks.geojson \
     > data/wa.txt
+```
+
+Then to get the selected grid as a GeoJSON:
+```bash
+python code/get_grid_geojson.py data/*.txt > data/grid.geojson
+```
+
+Note that the NWS sometimes returns 404 from the API, so you might not be able
+to get a complete grid on a single try.
+
+Then compress the GeoJSON and upload it to S3:
+```bash
+brotli -c data/grid.geojson > data/grid_compressed.geojson
+aws s3 cp \
+    data/grid_compressed.geojson s3://tiles.nst.guide/pct/ndfd_current.geojson \
+    --content-type application/geo+json \
+    --content-encoding br \
+    `# Set to public read access` \
+    --acl public-read
 ```
